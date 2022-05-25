@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Lista Gmail Recycle View</string>
+    <string name="float_button">Float Button</string>
 </resources>
