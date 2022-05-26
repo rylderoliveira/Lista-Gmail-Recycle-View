@@ -15,7 +15,7 @@ import androidx.annotation.ColorInt
 import androidx.recyclerview.widget.RecyclerView
 import com.example.listagmailrecycleview.model.Email
 
-class EmailAdapter(private val emails: MutableList<Email>): RecyclerView.Adapter<EmailAdapter.EmailViewHolder>() {
+class EmailAdapter(val emails: MutableList<Email>): RecyclerView.Adapter<EmailAdapter.EmailViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EmailViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.email_item, parent, false)
