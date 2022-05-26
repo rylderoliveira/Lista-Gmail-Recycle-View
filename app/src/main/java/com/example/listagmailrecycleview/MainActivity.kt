@@ -2,6 +2,7 @@ package com.example.listagmailrecycleview
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.listagmailrecycleview.model.email
@@ -14,6 +15,32 @@ import java.util.*
 class MainActivity : AppCompatActivity() {
 
     private lateinit var adapter: EmailAdapter
+
+    inner class ItemTouchHelper(
+        dragDirs: Int,
+        swipeDirs: Int
+    ): androidx.recyclerview.widget.ItemTouchHelper.SimpleCallback(
+        dragDirs,
+        swipeDirs
+    ){
+        override fun onMove(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+            target: RecyclerView.ViewHolder
+        ): Boolean {
+            val from = viewHolder.adapterPosition
+            val to = target.adapterPosition
+
+            Collections.swap(adapter.emails, from, to)
+            adapter.notifyItemMoved(from, to)
+            return true
+        }
+
+        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+            TODO("Not yet implemented")
+        }
+
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,6 +58,16 @@ class MainActivity : AppCompatActivity() {
             addEmail()
             recyclerViewMain.scrollToPosition(0)
         }
+
+        val helper = ItemTouchHelper(
+            ItemTouchHelper(
+                androidx.recyclerview.widget.ItemTouchHelper.UP or
+                    androidx.recyclerview.widget.ItemTouchHelper.DOWN,
+                androidx.recyclerview.widget.ItemTouchHelper.LEFT
+            )
+        )
+
+        helper.attachToRecyclerView(recyclerViewMain)
     }
 
     private fun addEmail() {
