@@ -1,8 +1,12 @@
 package com.example.listagmailrecycleview
 
+import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
+import androidx.appcompat.view.ActionMode
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -15,6 +19,7 @@ import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
+    private var actionMode: ActionMode? = null
     private lateinit var adapter: EmailAdapter
 
     inner class ItemTouchHelper(
@@ -70,10 +75,49 @@ class MainActivity : AppCompatActivity() {
 
         helper.attachToRecyclerView(recyclerViewMain)
         adapter.onItemClick = {
-            Log.i("Teste", "onItemClicked" )
+            enableActionMode(it)
         }
         adapter.onItemLongClick = {
-            Log.i("Teste", "onItemLongClicked" )
+            enableActionMode(it)
+        }
+    }
+
+    private fun enableActionMode(position: Int) {
+        if (actionMode == null) actionMode = startSupportActionMode(object: ActionMode.Callback{
+            override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+                mode?.menuInflater?.inflate(R.menu.menu_delete, menu)
+                return true
+            }
+
+            override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?): Boolean {
+                return false
+            }
+
+            override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
+                if (item?.itemId == R.id.action_delete) {
+                    adapter.deleteEmails()
+                    mode?.finish()
+                    return true
+                }
+                return false
+            }
+
+            @SuppressLint("NotifyDataSetChanged")
+            override fun onDestroyActionMode(mode: ActionMode?) {
+                adapter.selectedItems.clear()
+                adapter.emails.filter { it.selected == true }
+                    .forEach { it.selected = false }
+                adapter.notifyDataSetChanged()
+                actionMode = null
+            }
+        })
+
+        adapter.toggleSelection(position)
+        val size = adapter.selectedItems.size()
+        if (size == 0) actionMode?.finish()
+        else {
+            actionMode?.title = "$size"
+            actionMode?.invalidate()
         }
     }
 

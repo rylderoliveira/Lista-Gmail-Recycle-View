@@ -1,15 +1,22 @@
 package com.example.listagmailrecycleview
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.Typeface.BOLD
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.OvalShape
 import android.util.SparseBooleanArray
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AccelerateInterpolator
+import android.view.animation.DecelerateInterpolator
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.ColorInt
@@ -46,6 +53,27 @@ class EmailAdapter(val emails: MutableList<Email>): RecyclerView.Adapter<EmailAd
     }
 
     override fun getItemCount(): Int = emails.size
+    fun toggleSelection(position: Int) {
+        currentSelectedPos = position
+        if (selectedItems[position,false]){
+            selectedItems.delete(position)
+            emails[position].selected = false
+        } else {
+            selectedItems.put(position, true)
+            emails[position].selected = true
+        }
+
+        notifyItemChanged(position)
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun deleteEmails() {
+        emails.removeAll(
+            emails.filter { it.selected }
+        )
+        notifyDataSetChanged()
+        currentSelectedPos = -1
+    }
 
     inner class EmailViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
         @SuppressLint("CutPasteId")
@@ -70,6 +98,46 @@ class EmailAdapter(val emails: MutableList<Email>): RecyclerView.Adapter<EmailAd
                 itemView.findViewById<TextView>(R.id.txt_date).setTypeface(Typeface.DEFAULT, BOLD)
                 itemView.findViewById<TextView>(R.id.txt_subject).setTypeface(Typeface.DEFAULT, BOLD)
             }
+
+            if (email.selected){
+                itemView.findViewById<TextView>(R.id.txt_icon).background = itemView.oval(Color.BLUE)
+                itemView.background = GradientDrawable().apply {
+                    shape = GradientDrawable.RECTANGLE
+                    cornerRadius = 32f
+                    setColor(Color.rgb(194, 226, 252))
+                }
+            } else {
+                itemView.background = GradientDrawable().apply {
+                    shape = GradientDrawable.RECTANGLE
+                    cornerRadius = 32f
+                    setColor(Color.WHITE)
+                }
+            }
+
+            if(selectedItems.isNotEmpty()){
+                animate(itemView.findViewById<TextView>(R.id.txt_icon), email)
+            }
+        }
+
+
+        private fun animate(view: TextView, email: Email){
+            val oa1: ObjectAnimator = ObjectAnimator.ofFloat(view, "scaleX", 1f, 0f)
+            val oa2: ObjectAnimator = ObjectAnimator.ofFloat(view, "scaleX", 0f, 1f)
+
+            oa1.interpolator = DecelerateInterpolator()
+            oa2.interpolator = AccelerateInterpolator()
+
+            oa1.duration = 200
+            oa2.duration = 200
+
+            oa1.addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator?) {
+                    super.onAnimationEnd(animation)
+                    if (email.selected) view.text = "\u2713"
+                    oa2.start()
+                }
+            })
+            oa1.start()
         }
     }
 }
