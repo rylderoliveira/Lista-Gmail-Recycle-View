@@ -2,6 +2,7 @@ package com.example.listagmailrecycleview
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -37,7 +38,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-            TODO("Not yet implemented")
+            adapter.emails.removeAt(viewHolder.adapterPosition)
+            adapter.notifyItemRemoved(viewHolder.adapterPosition)
         }
 
     }
@@ -61,13 +63,18 @@ class MainActivity : AppCompatActivity() {
 
         val helper = ItemTouchHelper(
             ItemTouchHelper(
-                androidx.recyclerview.widget.ItemTouchHelper.UP or
-                    androidx.recyclerview.widget.ItemTouchHelper.DOWN,
+                0,
                 androidx.recyclerview.widget.ItemTouchHelper.LEFT
             )
         )
 
         helper.attachToRecyclerView(recyclerViewMain)
+        adapter.onItemClick = {
+            Log.i("Teste", "onItemClicked" )
+        }
+        adapter.onItemLongClick = {
+            Log.i("Teste", "onItemLongClicked" )
+        }
     }
 
     private fun addEmail() {

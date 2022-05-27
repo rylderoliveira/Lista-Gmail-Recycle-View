@@ -6,16 +6,24 @@ import android.graphics.Typeface
 import android.graphics.Typeface.BOLD
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.OvalShape
+import android.util.SparseBooleanArray
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.ColorInt
+import androidx.core.util.isNotEmpty
 import androidx.recyclerview.widget.RecyclerView
 import com.example.listagmailrecycleview.model.Email
 
 class EmailAdapter(val emails: MutableList<Email>): RecyclerView.Adapter<EmailAdapter.EmailViewHolder>() {
+
+    val selectedItems = SparseBooleanArray()
+    private var currentSelectedPos: Int = -1
+
+    var onItemClick: ((Int) -> Unit)? = null
+    var onItemLongClick: ((Int) -> Unit)? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EmailViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.email_item, parent, false)
@@ -24,6 +32,17 @@ class EmailAdapter(val emails: MutableList<Email>): RecyclerView.Adapter<EmailAd
 
     override fun onBindViewHolder(holder: EmailViewHolder, position: Int) {
         holder.bind(emails[position])
+        holder.itemView.setOnClickListener {
+            if (selectedItems.isNotEmpty()) {
+                onItemClick?.invoke(position)
+            }
+        }
+        holder.itemView.setOnLongClickListener {
+            onItemLongClick?.invoke(position)
+            return@setOnLongClickListener true
+        }
+
+        if(currentSelectedPos == position) currentSelectedPos = -1
     }
 
     override fun getItemCount(): Int = emails.size
